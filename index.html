@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALL TIME HIGH Success Locator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Anpassade stilar för att matcha bilden */
+      body {
+        font-family: 'Inter', sans-serif; /* Standard typsnitt */
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffffff; /* Vit bakgrund som i bilden */
+        padding: 1rem;
+      }
+      .container {
+        border: 2px solid black;
+        background-color: white;
+        padding: 2rem; /* Ökat padding lite */
+        text-align: center;
+        max-width: 22rem; /* Justerad max-bredd */
+        width: 100%;
+        /* Ingen box-shadow för att matcha bilden */
+        border-radius: 0.25rem; /* Lätt rundade hörn? Bilden är lite oklar */
+      }
+      .title {
+        font-family: sans-serif; /* Enkel sans-serif för titel */
+        font-weight: 700; /* Bold */
+        font-size: 1.5rem; /* Storlek för titel */
+        line-height: 1.2; /* Radavstånd för titel */
+        text-transform: uppercase; /* Versaler */
+        margin-bottom: 0.5rem; /* Marginal under titel */
+      }
+      .separator {
+          border: none;
+          height: 2px;
+          background-color: black;
+          margin-top: 0.5rem;
+          margin-bottom: 2rem; /* Mer utrymme efter linjen */
+      }
+      .arrow-circle {
+          width: 10rem; /* Storlek på cirkeln */
+          height: 10rem;
+          border-radius: 50%; /* Gör den rund */
+          background-color: #f3f4f6; /* Ljusgrå bakgrund (Tailwind gray-100) */
+          border: 2px solid black;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 2rem auto; /* Centrera och marginal under */
+          overflow: hidden; /* Dölj delar av pilen som går utanför */
+      }
+      #arrow-svg {
+          width: 50%; /* Storlek på SVG-pilen inuti cirkeln */
+          height: 50%;
+          transition: transform 0.5s ease-out; /* Mjuk rotation */
+          /* Röd fyllning och gråaktig kant för att efterlikna skugga/outline */
+          fill: #ef4444; /* Röd färg (Tailwind red-500) */
+          stroke: #4b5563; /* Mörkgrå kant (Tailwind gray-600) */
+          stroke-width: 5; /* Tjocklek på kanten */
+          stroke-linejoin: round; /* Rundade hörn på kanten */
+      }
+      .distance-text {
+          color: #3b82f6; /* Blå färg (Tailwind blue-500) */
+          font-weight: 700; /* Bold */
+          font-size: 1.25rem; /* Lite större text */
+          margin-bottom: 0.25rem; /* Mindre marginal under */
+      }
+      .target-text {
+          color: black;
+          font-size: 0.875rem; /* Mindre text */
+          margin-bottom: 2rem; /* Marginal under */
+      }
+      .footer-separator {
+          border: none;
+          border-top: 2px dashed black; /* Streckad linje */
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+      }
+      .footer-text {
+          font-family: monospace; /* Monospace typsnitt */
+          font-size: 0.875rem;
+          color: #4b5563; /* Mörkgrå text */
+      }
+      /* Ta bort knappstilar då knappen tas bort */
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">
+            ALL TIME HIGH<br>SUCCESS LOCATOR
+        </h1>
+        <hr class="separator">
+
+        <div class="arrow-circle">
+            <svg id="arrow-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <path d="M50 10 L90 50 L70 50 L70 90 L30 90 L30 50 L10 50 Z" />
+            </svg>
+        </div>
+
+        <div id="info">
+            <p id="distance" class="distance-text">Hämtar position...</p>
+            <p class="target-text">Target: ALL TIME HIGH</p>
+        </div>
+
+        <div id="error" class="text-red-600 mb-4 font-bold hidden"></div> <hr class="footer-separator">
+        <p class="footer-text">// ALWAYS POINTING TO SUCCESS //</p>
+
+        </div>
+
+    <script>
+        // --- Element Referenser ---
+        // Uppdaterad referens till SVG-pilen
+        const arrowElement = document.getElementById('arrow-svg');
+        const distanceElement = document.getElementById('distance');
+        const infoElement = document.getElementById('info'); // Behövs inte direkt, men skadar inte
+        const errorElement = document.getElementById('error');
+        // Ingen knappreferens behövs längre
+
+        // --- Målkoordinater (Fortfarande samma som tidigare) ---
+        const targetLat = 59.30998428196858;
+        const targetLon = 18.006478851446655;
+
+        // --- Funktioner (samma som tidigare) ---
+
+        function toRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        function toDegrees(radians) {
+            return radians * 180 / Math.PI;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Jordens radie i km
+            const dLat = toRadians(lat2 - lat1);
+            const dLon = toRadians(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Avstånd i km
+            return distance;
+        }
+
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const phi1 = toRadians(lat1);
+            const lambda1 = toRadians(lon1);
+            const phi2 = toRadians(lat2);
+            const lambda2 = toRadians(lon2);
+
+            const y = Math.sin(lambda2 - lambda1) * Math.cos(phi2);
+            const x = Math.cos(phi1) * Math.sin(phi2) -
+                      Math.sin(phi1) * Math.cos(phi2) * Math.cos(lambda2 - lambda1);
+            let brng = Math.atan2(y, x);
+            brng = toDegrees(brng);
+            // Justering för SVG: SVG rotation är medurs, bäring är medurs från norr.
+            // Vår SVG-pil pekar uppåt (0 grader bäring) som standard.
+            return (brng + 360) % 360;
+        }
+
+        function updateUI(latitude, longitude) {
+            try {
+                const distance = calculateDistance(latitude, longitude, targetLat, targetLon);
+                const bearing = calculateBearing(latitude, longitude, targetLat, targetLon);
+
+                // Uppdatera avståndstext
+                if (distance < 1) {
+                    distanceElement.textContent = `Distance: ${(distance * 1000).toFixed(0)} m`;
+                } else {
+                    distanceElement.textContent = `Distance: ${distance.toFixed(1)} km`;
+                }
+
+                // Rotera SVG-pilen
+                arrowElement.style.transform = `rotate(${bearing}deg)`;
+                arrowElement.style.transformOrigin = 'center center'; // Säkerställ rotation runt mitten
+
+                // Dölj eventuella fel
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            } catch (e) {
+                console.error("Fel vid UI-uppdatering:", e);
+                errorElement.textContent = 'Ett internt fel uppstod vid uppdatering.';
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        function handleLocationError(error) {
+            let message = 'Okänt fel vid hämtning av position.';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "Du nekade åtkomst till platsinformation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "Platsinformation är inte tillgänglig.";
+                    break;
+                case error.TIMEOUT:
+                    message = "Timeout vid hämtning av platsinformation.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    message = "Ett okänt fel uppstod.";
+                    break;
+            }
+            console.error("Geolocation error:", error.message);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            distanceElement.textContent = 'Kunde inte hämta position.';
+            // Återställ pilen vid fel
+            arrowElement.style.transform = 'rotate(0deg)';
+        }
+
+        function getLocation() {
+            distanceElement.textContent = 'Hämtar position...';
+            errorElement.classList.add('hidden');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        console.log(`Position hämtad: Lat ${latitude}, Lon ${longitude}`);
+                        updateUI(latitude, longitude);
+                    },
+                    handleLocationError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                const message = "Geolocation stöds inte av din webbläsare.";
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+                distanceElement.textContent = 'Geolocation stöds ej.';
+                console.error(message);
+            }
+        }
+
+        // --- Initialisering ---
+        getLocation();
+
+        // Ingen automatisk uppdatering eller knapplyssnare behövs längre
+
+    </script>
+
+</body>
+</html>
